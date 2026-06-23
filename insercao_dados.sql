@@ -56,7 +56,7 @@ INSERT INTO Usuarios (nome, cpf, email, telefone) VALUES
 ('Diego Ramos', '14725836914', 'diego@email.com', '61914725836'), ('Helena Gomes', '25836914725', 'helena@email.com', '71925836914'),
 ('Fábio Junior', '36914725836', 'fabio@email.com', '81936914725'), ('Renata Silveira', '74185296374', 'renata@email.com', '91974185296');
 
--- CARGA DE TABELAS ASSOCIATIVAS E RELACIONAIS (10)
+-- CARGA DE TABELAS ASSOCIATIVAS E RELACIONAIS
 
 -- Relacionamento Livro_Autor
 INSERT INTO Livro_Autor (id_livro, id_autor) VALUES 
@@ -74,30 +74,31 @@ INSERT INTO Itens_Emprestimo (id_emprestimo, id_livro) VALUES
 (1, 1), (2, 5), (3, 10), (4, 15), (5, 20), (6, 2), (7, 4), (8, 6), (9, 8), (10, 19);
 
 
+-- ========================================================================
+-- TESTES DE INTEGRIDADE (ETAPA 2/3)
+-- Executa um comando de cada vez para ver a mensagem de erro do PostgreSQL.
+-- ========================================================================
 
--- TESTES DE INTEGRIDADE (ETAPA 3)
--- Estes comandos foram projetados para falhar, validando as constraints de segurança.
-
--- 1. VIOLAÇÃO DE DOMÍNIO (CPF INVÁLIDO)
--- Motivo: Embora o campo suporte 11 caracteres, a inconsistência lógica será tratada em procedures futuras.
-INSERT INTO Usuarios (nome, cpf, email) VALUES ('Usuario Teste Erro', '123', 'erro@email.com');
+-- 1. VIOLAÇÃO DE TAMANHO DE DADO (CPF ACIMA DO LIMITE)
+-- Erro esperado: value too long for type character varying(11)
+INSERT INTO Usuarios (nome, cpf, email) VALUES ('Usuario Teste Erro', '111222333444555', 'erro@email.com');
 
 -- 2. VIOLAÇÃO DE CHECK CONSTRAINT (LÓGICA DE DATA)
--- Motivo: Tenta inserir uma devolução anterior ao empréstimo. Bloqueado pela CHK_DATAS_EMPRESTIMO.
+-- Erro esperado: new row for relation "emprestimos" violates check constraint "chk_datas_emprestimo"
 INSERT INTO Emprestimos (data_emprestimo, data_devolucao_prevista, id_usuario) 
 VALUES ('2024-12-30', '2024-12-01', 1);
 
 -- 3. VIOLAÇÃO DE NOT NULL (DADOS OBRIGATÓRIOS)
--- Motivo: Tenta inserir um livro sem título, o que quebraria a integridade do catálogo.
+-- Erro esperado: null value in column "titulo" of relation "livros" violates not-null constraint
 INSERT INTO Livros (titulo, isbn, id_editora, id_categoria) 
 VALUES (NULL, '0000000000000', 1, 1);
 
 -- 4. VIOLAÇÃO DE UNICIDADE (ISBN DUPLICADO)
--- Motivo: Tenta inserir o mesmo ISBN do livro 'Fundação'. Bloqueado pela UNIQUE constraint.
+-- Erro esperado: duplicate key value violates unique constraint "livros_isbn_key"
 INSERT INTO Livros (titulo, isbn, id_editora, id_categoria) 
 VALUES ('Livro Clone', '9788576573005', 1, 1);
 
 -- 5. VIOLAÇÃO DE INTEGRIDADE REFERENCIAL (FK INEXISTENTE)
--- Motivo: Tenta associar um livro a uma Editora (ID 999) que não existe na tabela Editoras.
+-- Erro esperado: insert or update on table "livros" violates foreign key constraint "fk_livro_editora"
 INSERT INTO Livros (titulo, isbn, id_editora, id_categoria) 
 VALUES ('Livro Orfão', '1111111111111', 999, 1);
