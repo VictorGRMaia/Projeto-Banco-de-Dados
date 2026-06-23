@@ -53,8 +53,8 @@ SELECT
     ED.nome_editora, 
     COUNT(DISTINCT L.id_livro) AS diversidade_titulos,
     COUNT(IE.id_livro) AS total_itens_movimentados
-FROM Editoras ED
-LEFT JOIN Livros L ON ED.id_editora = L.id_editora
+FROM Livros L
+RIGHT JOIN Editoras ED ON L.id_editora = ED.id_editora
 LEFT JOIN Itens_Emprestimo IE ON L.id_livro = IE.id_livro
 GROUP BY ED.id_editora, ED.nome_editora
 ORDER BY total_itens_movimentados DESC;
